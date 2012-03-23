@@ -1239,20 +1239,23 @@ do_add_flows(const struct settings *s UNUSED, int argc UNUSED, char *argv[])
 }
 
 static void
-do_mod_flows(const struct settings *s, int argc UNUSED, char *argv[])
+do_mod_flows(const struct settings *s UNUSED, int argc UNUSED, char *argv[])
 {
-    uint16_t priority, idle_timeout, hard_timeout;
-    uint64_t cookie;
-    uint8_t table_id;
     struct vconn *vconn;
     struct ofpbuf *buffer;
     struct ofp_flow_mod *ofm;
+    uint16_t priority, idle_timeout, hard_timeout;
+    uint64_t cookie;
+    uint8_t table_id;
+    struct ofp_match match;
 
     /* Parse and send. */
-    ofm = make_openflow(sizeof *ofm, OFPT_FLOW_MOD, &buffer);
-    str_to_flow(argv[2], &ofm->match, buffer,
+    make_openflow(sizeof *ofm, OFPT_FLOW_MOD, &buffer);
+    str_to_flow(argv[2], &match, buffer,
                 &table_id, NULL, &priority, &idle_timeout, &hard_timeout,
                 &cookie);
+    ofm = buffer->data;
+    ofm->match = match;
     if (s->strict) {
         ofm->command = htons(OFPFC_MODIFY_STRICT);
     } else {
@@ -1262,9 +1265,9 @@ do_mod_flows(const struct settings *s, int argc UNUSED, char *argv[])
     ofm->idle_timeout = table_id == EMERG_TABLE_ID ? 0 : htons(idle_timeout);
     ofm->hard_timeout = table_id == EMERG_TABLE_ID ? 0 : htons(hard_timeout);
     ofm->buffer_id = htonl(UINT32_MAX);
+    ofm->priority = htons(priority);
     if (table_id == EMERG_TABLE_ID)
         ofm->flags = htons(OFPFF_EMERG);
-    ofm->priority = htons(priority);
 
     open_vconn(argv[1], &vconn);
     send_openflow_buffer(vconn, buffer);

@@ -15,3 +15,7 @@ Platform.cfg_filename = "/local/sfs/sysenv"
 Platform.cfg_history_dir = "/local/sfs/cfg_history/" -- Dir for storing config history
 Platform.sfs_parent_dir = "/local"
 Platform.log_dir = "/local/logs"
+
+-- Management interface
+Platform.mgmt_if = "eth0"
+Platform.mgmt_if_allowed = {"eth0", "eth1"}

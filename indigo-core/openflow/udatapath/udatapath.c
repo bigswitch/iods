@@ -84,26 +84,8 @@ int wd_fd = -1;
 #if defined(OF_HW_PLAT)
 char mfr_desc[DESC_STR_LEN] = INDIGO_MFR_DESC;
 char sw_desc[DESC_STR_LEN] = INDIGO_REL_NAME;
-
-#if defined(QUANTA_LB9A)
-char hw_desc[DESC_STR_LEN] = "Pronto 3290";
-char dp_desc[DESC_STR_LEN] = "Indigo on Pronto 3290";
-#elif defined(QUANTA_LB8)
-char hw_desc[DESC_STR_LEN] = "Pronto 3780";
-char dp_desc[DESC_STR_LEN] = "Indigo on Pronto 3780";
-#elif defined(QUANTA_LB4G)
-char hw_desc[DESC_STR_LEN] = "Pronto 3240";
-char dp_desc[DESC_STR_LEN] = "Indigo on Pronto 3240";
-#elif defined(GSM73XX)
-char hw_desc[DESC_STR_LEN] = "Netgear GSM73XX";
-char dp_desc[DESC_STR_LEN] = "Indigo on Netgear GSM73XX";
-#elif defined(BCM_TRIUMPH2_REF)
-char hw_desc[DESC_STR_LEN] = "Broadcom 56634 Reference Design";
-char dp_desc[DESC_STR_LEN] = "Indigo on BCM56634";
-#else
-char hw_desc[DESC_STR_LEN] = "Unknown Indigo Platform";
 char dp_desc[DESC_STR_LEN] = "Indigo on unknown hardware";
-#endif
+char hw_desc[DESC_STR_LEN] = "Unknown Indigo Platform";
 
 #else /* Not OF_HW_PLAT */
 char mfr_desc[DESC_STR_LEN] = "Unknown";
@@ -112,6 +94,9 @@ char dp_desc[DESC_STR_LEN] = "";
 char hw_desc[DESC_STR_LEN] = "Reference Userspace Switch";
 #endif /* OF_HW_PLAT */
 char serial_num[SERIAL_NUM_LEN] = "None";
+
+static int hw_desc_set = false;
+static int dp_desc_set = false;
 
 static void parse_options(int argc, char *argv[]);
 static void usage(void) NO_RETURN;
@@ -262,7 +247,7 @@ udatapath_cmd(int argc, char *argv[])
         memcpy(dp->dp_mgmt.mac, dp_mac, ETH_ADDR_LEN);
     } else {  /* Use OF OUI and 3 bytes of DPID */
         dp->dp_mgmt.mac[0] = 0;
-        dp->dp_mgmt.mac[1] = 26;
+        dp->dp_mgmt.mac[1] = 0x26;
         dp->dp_mgmt.mac[2] = 0xe1;
         dp->dp_mgmt.mac[3] = dp->id & 0xff;
         dp->dp_mgmt.mac[4] = (dp->id >> 8) & 0xff;
@@ -287,6 +272,14 @@ udatapath_cmd(int argc, char *argv[])
     }
     dp->dp_mgmt.oob = dp_mgmt_oob;
     dp_mgmt_set(dp);
+
+    /* Get hw_desc/dp_desc from hw-lib if not set by command args */
+    if (!hw_desc_set && dp->hw_drv != NULL && dp->hw_drv->hw_desc != NULL) {
+        strncpy(hw_desc, dp->hw_drv->hw_desc, sizeof(hw_desc) - 1);
+    }
+    if (!dp_desc_set && dp->hw_drv != NULL && dp->hw_drv->dp_desc != NULL) {
+        strncpy(dp->dp_desc, dp->hw_drv->dp_desc, sizeof(dp->dp_desc) - 1);
+    }
 #endif
 
     n_listeners = 0;
@@ -533,6 +526,7 @@ parse_options(int argc, char *argv[])
             break;
 
         case OPT_HW_DESC:
+            hw_desc_set = true;
             strncpy(hw_desc, optarg, sizeof hw_desc);
             break;
 
@@ -541,6 +535,7 @@ parse_options(int argc, char *argv[])
             break;
 
         case OPT_DP_DESC:
+            dp_desc_set = true;
             strncpy(dp_desc, optarg, sizeof dp_desc);
             break;
 

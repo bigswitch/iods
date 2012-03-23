@@ -25,6 +25,7 @@ if test -z "$verbose"; then
 fi
 
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin
+export SVDIR=/service
 
 if test -z "$DEV_ADDR"; then
     export DEV_ADDR=`ifconfig | grep -A 2 eth0 | grep 'inet addr' \

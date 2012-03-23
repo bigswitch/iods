@@ -2,4 +2,5 @@
 ::ctrlaltdel:/sbin/reboot
 ::shutdown:/bin/umount -a -r
 ::restart:/sbin/init
+::respawn:/sbin/runsvdir-start
 ttyS0::respawn:-/bin/sh

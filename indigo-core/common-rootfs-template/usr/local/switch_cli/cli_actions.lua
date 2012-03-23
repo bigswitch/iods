@@ -182,19 +182,12 @@ end
 
 -- handle CLI invocation of of-restart
 function restart_handler()
-   local tmpfile
    local rv
 
    printf("restarting openflow daemons...\n")
-   tmpfile = os.tmpname()
-   if tmpfile then
-      rv = os.execute("/sbin/of-restart > " .. tmpfile)
-      if rv ~= 0 then
-         printf("error %d retarting\n", rv)
-      end
-      os.remove(tmpfile)
-   else
-      printf("cannot create temporary file; aborting\n")
+   rv = os.execute("/sbin/of-restart > /dev/null")
+   if rv ~= 0 then
+      printf("error %d restarting\n", rv)
    end
 
    return 0, ""

@@ -1,0 +1,2 @@
+#!/bin/sh
+exec httpd -f -h /usr/local/httpd 2>&1

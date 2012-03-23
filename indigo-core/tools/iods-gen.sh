@@ -144,7 +144,7 @@ binary_files="ofswd linux-kernel-bde.ko linux-user-bde.ko"
 exitval=0
 for file in $binary_files; do
     set +e
-    f=`find . -name $file -print`
+    f=`find . -name $file -type f -print`
     set -e
     if test -n "$f"; then
         echo "WARNING: Found file $f"

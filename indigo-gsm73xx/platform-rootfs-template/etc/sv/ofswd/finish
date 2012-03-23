@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# when stopping ofswd, restart inband-network-cfg 
+source /etc/find-env
+sv restart inband-network-cfg

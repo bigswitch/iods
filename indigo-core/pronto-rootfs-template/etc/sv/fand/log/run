@@ -1,0 +1,11 @@
+#!/bin/sh
+source /etc/find-env
+SERVICE=fand
+LOGDIR=$log_dir/$SERVICE
+if [ ! -d  $LOGDIR ]; then
+  mkdir -p $LOGDIR
+fi
+if [ ! -e $LOGDIR/config ]; then
+  cp ${SVDIR:-/service}/$SERVICE/log/config $LOGDIR/config
+fi
+exec svlogd $LOGDIR

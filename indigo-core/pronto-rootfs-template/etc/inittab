@@ -13,6 +13,9 @@
 # Start user application
 #::respawn:/bin/application
 
+# Start sv
+::respawn:/sbin/runsvdir-start
+
 # Must be last 'respawn' entry to avoid ^C problem
 # Start a shell on the console
 ::respawn:-/bin/sh

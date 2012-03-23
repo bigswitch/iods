@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# wait for ofswd to come up; source find-env to get SVDIR
+source /etc/find-env
+sv start ofswd > /dev/null || exit 1
+
+# delay to allow ofswd startup to complete
+sleep 10
+
+source /etc/inband-network
+
+# since run script cannot terminate, 
+# loop forever without burning too many cycles
+while true; do
+    sleep 60
+done

@@ -60,9 +60,16 @@ Content-type: text/html
        value=<% chk_var(cfg.controller_port) %> />
 <input type="hidden" name="datapath_id" value=<% chk_var(cfg.datapath_id) %> />
 <input type="hidden" name="fail_mode" value=<% chk_var(cfg.fail_mode) %> />
+<tr><td>Management interface for this switch:</td>
+<td>
+<select name="mgmt_if" size="1">
+<option name="eth0" <% get_chk_val(cfg.mgmt_if, "eth0", "selected") %> >eth0</option>
+<option name="eth1" <% get_chk_val(cfg.mgmt_if, "eth1", "selected") %> >eth1</option>
+</select>
+</td></tr>
 <tr><td>IP address for this switch:</td>
 <td>
-<input type="text" name="switch_ip" value=<% chk_var(cfg.switch_ip) %> />
+<input type="text" name="ip_addr" value=<% chk_var(cfg.ip_addr) %> />
 </td></tr>
 <tr><td>Netmask for this IP address:</td>
 <td>

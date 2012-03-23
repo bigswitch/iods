@@ -315,6 +315,9 @@ struct of_hw_driver {
     int (*ioctl)(of_hw_driver_t *hw_drv, uint32_t op, void **io_param,
                  int *io_len);
 
+    char *hw_desc;   /* max 256 chars */
+    char *dp_desc;   /* max 256 chars */
+
 };
 
 /**************** IOCTL values ****************/

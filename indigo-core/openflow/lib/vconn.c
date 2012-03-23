@@ -554,14 +554,15 @@ do_send(struct vconn *vconn, struct ofpbuf *msg)
     if (!VLOG_IS_DBG_ENABLED()) {
         retval = (vconn->class->send)(vconn, msg);
     } else {
+        char *s = ofp_to_string(msg->data, msg->size, 1);
         retval = (vconn->class->send)(vconn, msg);
         if (retval != EAGAIN) {
-            char *s = ofp_to_string(msg->data, msg->size, 1);
             VLOG_DBG_RL(&rl, "%s: sent (%s): %s",
                         vconn->name, strerror(retval), s);
-            free(s);
         }
+        free(s);
     }
+
     return retval;
 }
 

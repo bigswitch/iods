@@ -3,6 +3,17 @@ Release Notes
 Please see the web site http://www.openflowhub.org/display/Indigo for full 
 information.
 
+IODS Release 2012.03.19
+
+* Use standard busybox initialization management. See March 2012 
+Indigo Initialization
+* Continued improvement of management interface specification and 
+configuration. See March 2012 Indigo Initialization
+* Fixed issues related to HW and datapath description
+* Addressed queuing bug (Indigo-125)
+* Addressed VLAN processing bug (Indigo-91)
+* Cleaned up and limited logging messages from various sources
+* Enabled source and dest MAC rewrite for the Pronto 3780 platform
 
 IODS Release 2011.12.05
 

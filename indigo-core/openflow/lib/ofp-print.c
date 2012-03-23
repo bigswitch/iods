@@ -1105,6 +1105,25 @@ ofp_port_stats_reply(struct ds *string, const void *body, size_t len,
 }
 
 static void
+ofp_queue_stats_request(struct ds *string, const void *oh, size_t len UNUSED,
+                        int verbosity UNUSED)
+{
+    const struct ofp_queue_stats_request *qsr = oh;
+
+    if (qsr->port_no == OFPP_ALL) {
+        ds_put_format(string, " port=all, ");
+    } else {
+        ds_put_format(string, " port=%"PRIu16", ", qsr->port_no);
+    }
+
+    if (qsr->queue_id == OFPQ_ALL) {
+        ds_put_format(string, " queue=all\n");
+    } else {
+        ds_put_format(string, " queue=%"PRIu16"\n", qsr->queue_id);
+    }
+}
+
+static void
 ofp_queue_stats_reply(struct ds *string, const void *body, size_t len,
                      int verbosity)
 {
@@ -1230,7 +1249,9 @@ print_stats(struct ds *string, int type, const void *body, size_t body_len,
         {
             OFPST_QUEUE,
             "queue",
-            { 0, 0, NULL, },
+            { sizeof(struct ofp_queue_stats_request),
+              sizeof(struct ofp_queue_stats_request),
+              ofp_queue_stats_request },
             { 0, SIZE_MAX, ofp_queue_stats_reply}
         },
         {
@@ -1323,13 +1344,13 @@ ofp_echo(struct ds *string, const void *oh, size_t len, int verbosity)
 }
 
 static void
-ofp_vendor(struct ds *string UNUSED, const void *oh, size_t len UNUSED, int verbosity UNUSED)
+ofp_vendor(struct ds *string, const void *oh, size_t len, int verbosity UNUSED)
 {
     const struct ofp_vendor_header *vh = oh;
 
-    switch(ntohl(vh->vendor)) 
-    {
-    }
+    ds_put_format(string, " id %08x\n", ntohl(vh->vendor));
+
+    ds_put_hex_dump(string, vh, len, 0, true); 
 }
 
 /*
@@ -1379,6 +1400,18 @@ show_queue_props(struct ds *string, const struct ofp_packet_queue *queue_desc)
     ds_put_format(string, "\n");
 
     return ent_len;
+}
+
+static void
+show_queue_get_config_request(struct ds *string, const void *oh,
+                              size_t len UNUSED, int verbosity UNUSED)
+{
+    const struct ofp_queue_get_config_request *qcr;
+
+    qcr = oh;
+
+    ds_put_format(string, "\nRequest queue cfg for port %d:\n", 
+                  ntohs(qcr->port));
 }
 
 static void
@@ -1539,6 +1572,12 @@ static const struct openflow_packet packets[] = {
         "vendor",
         sizeof (struct ofp_vendor_header),
         ofp_vendor,
+    },
+    {
+        OFPT_QUEUE_GET_CONFIG_REQUEST,
+        "queue_config_request",
+        sizeof (struct ofp_queue_get_config_request),
+        show_queue_get_config_request,
     },
     {
         OFPT_QUEUE_GET_CONFIG_REPLY,

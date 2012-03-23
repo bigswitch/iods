@@ -1,0 +1,5 @@
+#!/bin/sh
+
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin
+source /etc/find-env
+exec env - PATH=$PATH runsvdir -P ${SVDIR:-/service}

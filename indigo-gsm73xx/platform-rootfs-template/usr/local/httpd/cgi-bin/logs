@@ -63,7 +63,7 @@ Content-type: text/html
 <form name="input" action="logs" method="POST">
 
 <%
-   selected = "ofproto"
+   selected = "ofprotocol"
    if FORM and FORM.log then selected = FORM.log end
 
    content = ""
@@ -84,7 +84,12 @@ Content-type: text/html
                ent.state .. ": " .. ent.ctrl_ip .. "\n"
          end
       else
-         local filename = "/local/logs/" .. FORM.log .. ".log"
+         local filename
+         if FORM.log == "cmdsrv" then
+            filename = "/local/logs/" .. FORM.log .. ".log"
+         else
+            filename = "/local/logs/" .. FORM.log .. "/current"
+         end
          content = read_file(filename)
          if not content then
             content = "ERROR: Could not open " .. tostring(filename)
@@ -98,9 +103,9 @@ Content-type: text/html
 <option name="cmdsrv" 
 <% get_chk_val(selected, "cmdsrv", "selected") %>
 value="cmdsrv">Command Server</option>
-<option name="ofproto" 
-<% get_chk_val(selected, "ofproto", "selected") %>
-value="ofproto">OpenFlow Protocol Daemon</option>
+<option name="ofprotocol" 
+<% get_chk_val(selected, "ofprotocol", "selected") %>
+value="ofprotocol">OpenFlow Protocol Daemon</option>
 <option name="ofswd" 
 <% get_chk_val(selected, "ofswd", "selected") %>
 value="ofswd">OpenFlow Switch Daemon</option><br>
@@ -120,7 +125,7 @@ value="drvdbg">Driver Debug</option>
       print("<h2>")
       if FORM.log == "cmdsrv" then
          print("Command Server Log<\h2>")
-      elseif FORM.log == "ofproto" then
+      elseif FORM.log == "ofprotocol" then
          print("Protocol Daemon Log<\h2>")
       elseif FORM.log == "ofswd" then
          print("Switch Datapath Daemon Log<\h2>")

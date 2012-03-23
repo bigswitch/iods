@@ -59,34 +59,34 @@ if test -e /etc/oob-network; then
     source /etc/oob-network
 fi
 
+# Start up runit-managed services
+SRCSV=/etc/sv
+DSTSV=/service
+mkdir -p $DSTSV
+
 # Start up fan daemon if present
-if test -x /sbin/fand; then
-    /sbin/fand > $log_dir/fand.log 2>&1 &
+PROG=fand
+if test -x /sbin/$PROG; then
+    ln -sf $SRCSV/$PROG $DSTSV
+else
+    rm -f $DSTSV/$PROG
 fi
 
 # Start up telnet if so directed
 # To do: Direct to CLI or shell
+PROG=telnetd
 if test "$disable_telnetd" != "yes" ; then
-    echo "Starting Telnet"
-    telnetd
+    ln -sf $SRCSV/$PROG $DSTSV
+else
+    rm -f $DSTSV/$PROG
 fi
 
-# Start up SSH if available
+# Start up SSH if so directed
+PROG=dropbear
 if test "$disable_sshd" != "yes" ; then
-    if test -n "`which dropbearkey`"; then
-        if ! test -e /etc/dropbear/dropbear_rsa_host_key; then
-            echo "Generating RSA key"
-            mkdir -p /etc/dropbear
-            dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key > \
-                /etc/dropbear/dropbear_rsa_host_key.pub
-        fi
-    fi
-    if test -n "`which dropbear`"; then
-        echo "Starting SSH: `which dropbear`"
-        dropbear
-    else
-        echo "SSH dropbear not found"
-    fi
+    ln -sf $SRCSV/$PROG $DSTSV
+else
+    rm -f $DSTSV/$PROG
 fi
 
 # Check if environment "no_sysconf" set from boot args
@@ -95,22 +95,26 @@ if test "$disable_sysconf" == "yes" ; then
     exit 0
 fi
 
-if test -e $sys_config_file; then
-    echo "System Init:  Running $sys_config_file"
-    source $sys_config_file
-else
-    echo "No system config file found; manual configuration required"
-    echo "End System Init"
-fi
+# Start up ofswd and ofprotocol
+PROG=ofswd
+ln -sf $SRCSV/$PROG $DSTSV
+PROG=ofprotocol
+ln -sf $SRCSV/$PROG $DSTSV
 
+# Start up inband-network configuration if necessary
+PROG=inband-network-cfg
 if test -e /etc/inband-network; then
-    source /etc/inband-network
+    ln -sf $SRCSV/$PROG $DSTSV
+else
+    rm -f $DSTSV/$PROG
 fi
 
-# Start web server if not disabled
+# Start web server if so directed
+PROG=httpd
 if test "$disable_httpd" != "yes"; then
-    echo "Starting web server"
-    httpd -h /usr/local/httpd
+    ln -sf $SRCSV/$PROG $DSTSV
+else
+    rm -f $DSTSV/$PROG
 fi
 
 if test -e $config_dir/indigo-postinit.sh; then

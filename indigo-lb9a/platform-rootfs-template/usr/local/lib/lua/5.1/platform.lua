@@ -15,3 +15,7 @@ Platform.cfg_filename = "/cf_card/local/sysenv"
 Platform.cfg_history_dir = "/cf_card/local/cfg_history/"
 
 Platform.log_dir = "/cf_card/local/logs"
+
+-- Management interface
+Platform.mgmt_if = "eth0"
+Platform.mgmt_if_allowed = {"eth0", "eth1"}

@@ -38,7 +38,7 @@ local log_dir = os.getenv('log_dir')
 if log_dir == nil then
   log_dir = '/local/logs'
 end
-log_file = log_dir .. '/ofswd.log'
+log_file = log_dir .. '/ofswd/current'
 
 pre = get_cmd_output("wc -c " .. log_file .. "|awk '{print $1}'")
 if str and str ~= "" then

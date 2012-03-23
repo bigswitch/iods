@@ -27,7 +27,7 @@ if test "$dhcp_config" != "require"; then
         nm_arg="netmask $netmask"
     fi
     if test -n "$ip_addr"; then
-        echo "Setting switch IP address to $switch_ip"
+        echo "Setting switch IP address to $ip_addr"
         /sbin/ifconfig $interface $ip_addr $nm_arg
     fi
 

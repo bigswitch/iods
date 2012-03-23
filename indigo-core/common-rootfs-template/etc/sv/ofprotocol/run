@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+# Copyright 2011 Big Switch Networks
+#
+
+# ofprotocol depends on ofswd; source find-env to get SVDIR
+source /etc/find-env
+sv start ofswd || exit 1
+
+if test -z "$controller_ip"; then
+    echo "No controller IP address set; exiting"
+    exit 2
+fi
+
+if test -z "$controller_port"; then
+    export controller_port=6633
+fi
+
+fail_arg=""
+[ "$fail_mode" != "" ] && fail_arg="--fail=$fail_mode"
+
+exec ofprotocol $ofp_options $fail_arg --out-of-band \
+        tcp:127.0.0.1 tcp:$controller_ip:$controller_port 2>&1

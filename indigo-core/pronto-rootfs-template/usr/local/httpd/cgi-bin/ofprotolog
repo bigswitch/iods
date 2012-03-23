@@ -8,7 +8,7 @@ Content-type: text/html
    require "platform"
    require "ui_utils"
 
-   local filename = Platform.log_dir .. "/ofproto.log"
+   local filename = Platform.log_dir .. "/ofprotocol/current"
    content = read_file(filename)
    if not content then
       content = "ERROR: Could not open " .. tostring(filename)

@@ -8,7 +8,7 @@ Content-type: text/html
    require "ui_utils"
    require "platform"
 
-   local filename = Platform.log_dir .. "/ofswd.log"
+   local filename = Platform.log_dir .. "/ofswd/current"
    content = read_file(filename)
    if not content then
       content = "ERROR: Could not open " .. tostring(filename)

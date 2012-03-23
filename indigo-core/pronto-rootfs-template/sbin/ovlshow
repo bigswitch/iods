@@ -1,4 +1,0 @@
-#!/bin/sh
-echo "Current files to be saved in overlay"
-cat /etc/overlay-files
-

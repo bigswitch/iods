@@ -48,8 +48,16 @@ function validate_param(var, value)
       if not dator(value, dator_arg) then
          -- TODO:  Make this an error?  Move to parser? Add -f to force?
          local dator_help = Config.validator_to_help[dator]
-         str = "Variable '" .. var .. "'  with value \n    '" .. tostring(value)
+         str = "Variable '" .. var .. "' with value \n    '" .. tostring(value)
          str = str .. "'\n    fails validator:  Needs " .. dator_help
+
+         -- only parse_string_list has a dator_arg
+         if dator_arg then
+            str = str .. "\n   "
+            for k,v in ipairs(dator_arg) do 
+               str = str .. " " .. v
+            end
+         end
 
          return false, str
       end

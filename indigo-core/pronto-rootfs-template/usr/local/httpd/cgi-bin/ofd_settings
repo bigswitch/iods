@@ -55,7 +55,8 @@ Content-type: text/html
 
 <form name="input" action="/cgi-bin/ofd_settings" method="POST" id="ofd_settings_form">
 <table cellspacing="10">
-<input type="hidden" name="switch_ip" value=<% chk_var(cfg.switch_ip) %> />
+<input type="hidden" name="mgmt_if" value=<% chk_var(cfg.mgmt_if) %> />
+<input type="hidden" name="ip_addr" value=<% chk_var(cfg.ip_addr) %> />
 <input type="hidden" name="netmask" value=<% chk_var(cfg.netmask) %> />
 <input type="hidden" name="gateway" value=<% chk_var(cfg.gateway) %> />
 <input type="hidden" name="system_ref" value=<% chk_var(cfg.system_ref) %> />

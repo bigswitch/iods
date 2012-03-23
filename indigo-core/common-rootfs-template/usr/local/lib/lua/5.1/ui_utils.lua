@@ -328,7 +328,7 @@ function get_ctrl_history()
    -- Parse controller log for connections/disconnections
    -- Generate an array of entries (ip, cxn/dis, time), most recent first
    -- Also report current time
-   local ctrl_hist = read_file(Platform.log_dir .. "/ofproto.log")
+   local ctrl_hist = read_file(Platform.log_dir .. "/ofprotocol/current")
    local state = "unknown"
    local time = ""
    local ip = ""
@@ -606,20 +606,12 @@ function table_value_matches(tab, s)
    return matches, longest_prefix_set(matches)
 end
 
--- Trim spaces from start/end of string
+-- Trim whitespace from start/end of string
 function trim_string(str)
    if type(str) ~= "string" then return "" end
 
-   local s,e = str:find("^%s+")
-   if s then
-      str = str:sub(e+1)
-   end
-
-   s,e = str:find("%s+$")
-   if s then
-      str = str:sub(1,s - 1)
-   end
-   return str
+   -- from PiL2 20.4
+   return (str:gsub("^%s*(.-)%s*$", "%1"))
 end
 
 -- str and last token on line should share a root.  

@@ -97,6 +97,7 @@ recv_of_exp_queue_delete(struct datapath *dp,
 
     uint16_t port_no;
     uint32_t queue_id;
+    int error = 0;
 
     ofq_delete = (struct openflow_queue_command_header *)oh;
     opq = (struct ofp_packet_queue *)ofq_delete->body;
@@ -104,9 +105,17 @@ recv_of_exp_queue_delete(struct datapath *dp,
     queue_id = ntohl(opq->queue_id);
 
     p = dp_lookup_port(dp,port_no);
-    if (p->netdev) {
+    if (PORT_IN_USE(p)) {
         q = dp_lookup_queue(p,queue_id);
         if (q) {
+            if (IS_HW_PORT(p)) {
+                error = dp->hw_drv->port_queue_remove(dp->hw_drv, port_no, 
+                                                      queue_id);
+                if (error < 0) {
+                    VLOG_ERR("Failed to delete HW port %d queue %d", 
+                             port_no, queue_id);
+                }
+            }
             netdev_delete_class(p->netdev,q->class_id);
             port_delete_queue(p,q);
         }

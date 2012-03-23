@@ -145,83 +145,25 @@ extern char sw_desc;
 extern char dp_desc;
 extern char serial_num;
 
-#if defined(OF_HW_PLAT)
 
-/* Capabilities supported by this implementation. */
-#define OFP_SUPPORTED_CAPABILITIES ( OFPC_FLOW_STATS           \
-                                     | OFPC_TABLE_STATS        \
-                                     | OFPC_PORT_STATS         \
-                                     | OFPC_QUEUE_STATS) 
-/* FIXME:  Should OFPC_ARP_MATCH_IP be added? */
-
-/* We list the known platforms here. */
-#if defined(STANFORD_LB4G) /* Dual 56514, 48 GE + 4 x 10G */
-#define OFP_SUPPORTED_ACTIONS ( (1 << OFPAT_OUTPUT)         \
-                                | (1 << OFPAT_SET_VLAN_VID) \
-                                | (1 << OFPAT_SET_VLAN_PCP) \
-                                | (1 << OFPAT_STRIP_VLAN)   \
-                                | (1 << OFPAT_ENQUEUE))
-#elif defined(STANFORD_LB6B) /* 56800, 20 x 10G */
-#define OFP_SUPPORTED_ACTIONS ( (1 << OFPAT_OUTPUT)         \
-                                | (1 << OFPAT_ENQUEUE))
-#elif defined(STANFORD_LB9A) /* 56534, 48 GE + 4 x 10G */
-#define OFP_SUPPORTED_ACTIONS ( (1 << OFPAT_OUTPUT)         \
-                                | (1 << OFPAT_SET_VLAN_VID) \
-                                | (1 << OFPAT_SET_VLAN_PCP) \
-                                | (1 << OFPAT_SET_DL_SRC)   \
-                                | (1 << OFPAT_SET_DL_DST)   \
-                                | (1 << OFPAT_SET_NW_TOS)   \
-                                | (1 << OFPAT_STRIP_VLAN)   \
-                                | (1 << OFPAT_ENQUEUE))
-#elif defined(STANFORD_LB8) /* 5684x, 48 x 10G */
-/* FIXME:  DL_SRC and DL_DST set to be supported */
-#define OFP_SUPPORTED_ACTIONS ( (1 << OFPAT_OUTPUT)         \
-                                | (1 << OFPAT_SET_VLAN_VID) \
-                                | (1 << OFPAT_SET_VLAN_PCP) \
-                                | (1 << OFPAT_STRIP_VLAN)   \
-                                | (1 << OFPAT_ENQUEUE))
-#elif defined(GSM73XX)
-#define OFP_SUPPORTED_ACTIONS ( (1 << OFPAT_OUTPUT)         \
-                                | (1 << OFPAT_ENQUEUE))
-#elif defined(BCM_TRIUMPH2_REF) /* 56634, 48 GE + 4 x 10G */
-#define OFP_SUPPORTED_ACTIONS ( (1 << OFPAT_OUTPUT)         \
-                                | (1 << OFPAT_SET_VLAN_VID) \
-                                | (1 << OFPAT_SET_VLAN_PCP) \
-                                | (1 << OFPAT_SET_DL_SRC)   \
-                                | (1 << OFPAT_SET_DL_DST)   \
-                                | (1 << OFPAT_STRIP_VLAN)   \
-                                | (1 << OFPAT_ENQUEUE))
-#elif defined(BCM_SCORPION_REF) /* 56820, 24 x 10G + 4 GE */
-#define OFP_SUPPORTED_ACTIONS ( (1 << OFPAT_OUTPUT)         \
-                                | (1 << OFPAT_SET_VLAN_VID) \
-                                | (1 << OFPAT_SET_VLAN_PCP) \
-                                | (1 << OFPAT_STRIP_VLAN)   \
-                                | (1 << OFPAT_ENQUEUE))
-#else
-#error "Unknown Hardware Platform"
-#endif
-
-#else /* Not a hardware platform */
-
-/* Capabilities supported by this implementation. */
-#define OFP_SUPPORTED_CAPABILITIES ( OFPC_FLOW_STATS        \
-                                     | OFPC_TABLE_STATS        \
+/* Features supported by this sw implementation. */
+#define OFPC_SUPPORTED_CAPABILITIES_SW_MASK ( OFPC_FLOW_STATS \
+                                     | OFPC_TABLE_STATS       \
                                      | OFPC_PORT_STATS        \
                                      | OFPC_QUEUE_STATS       \
                                      | OFPC_ARP_MATCH_IP )
 /* Actions supported by this implementation. */
-#define OFP_SUPPORTED_ACTIONS ( (1 << OFPAT_OUTPUT)         \
-                                | (1 << OFPAT_SET_VLAN_VID) \
-                                | (1 << OFPAT_SET_VLAN_PCP) \
-                                | (1 << OFPAT_STRIP_VLAN)   \
-                                | (1 << OFPAT_SET_DL_SRC)   \
-                                | (1 << OFPAT_SET_DL_DST)   \
-                                | (1 << OFPAT_SET_NW_SRC)   \
-                                | (1 << OFPAT_SET_NW_DST)   \
-                                | (1 << OFPAT_SET_TP_SRC)   \
-                                | (1 << OFPAT_SET_TP_DST)   \
-                                | (1 << OFPAT_ENQUEUE))
-#endif
+#define OFPAT_SUPPORTED_ACTIONS_SW_MASK ( (1 << OFPAT_OUTPUT) \
+                                  | (1 << OFPAT_SET_VLAN_VID) \
+                                  | (1 << OFPAT_SET_VLAN_PCP) \
+                                  | (1 << OFPAT_STRIP_VLAN)   \
+                                  | (1 << OFPAT_SET_DL_SRC)   \
+                                  | (1 << OFPAT_SET_DL_DST)   \
+                                  | (1 << OFPAT_SET_NW_SRC)   \
+                                  | (1 << OFPAT_SET_NW_DST)   \
+                                  | (1 << OFPAT_SET_TP_SRC)   \
+                                  | (1 << OFPAT_SET_TP_DST)   \
+                                  | (1 << OFPAT_ENQUEUE))
 
 /* The origin of a received OpenFlow message, to enable sending a reply. */
 struct sender {
@@ -1372,8 +1314,16 @@ dp_send_features_reply(struct datapath *dp, const struct sender *sender)
     ofr->datapath_id  = htonll(dp->id);
     ofr->n_tables     = dp->chain->n_tables;
     ofr->n_buffers    = htonl(N_PKT_BUFFERS);
-    ofr->capabilities = htonl(OFP_SUPPORTED_CAPABILITIES);
-    ofr->actions      = htonl(OFP_SUPPORTED_ACTIONS);
+    /* features must be supported by both software and hardware */
+    if (dp->hw_drv != NULL) {
+        ofr->capabilities = htonl(
+            dp->hw_drv->caps.ofpc_flags & OFPC_SUPPORTED_CAPABILITIES_SW_MASK);
+        ofr->actions = htonl(
+            dp->hw_drv->caps.actions_supported & OFPAT_SUPPORTED_ACTIONS_SW_MASK);
+    } else {
+        ofr->capabilities = htonl(OFPC_SUPPORTED_CAPABILITIES_SW_MASK);
+        ofr->actions = htonl(OFPAT_SUPPORTED_ACTIONS_SW_MASK);
+    }
     LIST_FOR_EACH (p, struct sw_port, node, &dp->port_list) {
         struct ofp_phy_port *opp = ofpbuf_put_uninit(buffer, sizeof *opp);
         memset(opp, 0, sizeof *opp);

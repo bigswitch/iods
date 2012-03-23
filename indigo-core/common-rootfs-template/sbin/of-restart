@@ -7,13 +7,8 @@
 source /etc/find-env
 
 echo "OpenFlow Switch Restart"
-echo "Killing protocol daemon"
-killall -q ofprotocol.sh
-killall -q ofprotocol
-echo "Killing switch daemon"
-killall -q ofswd
-sleep 1
-killall -q ofswd-run
+sv down ofprotocol
+sv down ofswd
 echo "Removing existing SDK config files"
 rm -f $client_root/config.bcm $client_root/rc.soc
 echo "Delaying restart for 5 seconds"
@@ -24,10 +19,7 @@ if test "$disable_sysconf" == "yes" ; then
     exit 0
 fi
 
-echo "Starting ofswd"
-/sbin/ofswd-setup
-
-echo "Starting ofprotocol"
-/sbin/ofprotocol.sh &
+sv up ofswd
+sv up ofprotocol
 
 touch /tmp/.sys-restart

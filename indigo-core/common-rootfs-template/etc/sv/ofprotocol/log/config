@@ -1,0 +1,7 @@
+# max logfile size
+s262144
+# max logfiles
+n10
+# min logfiles
+N3
+

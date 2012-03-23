@@ -50,7 +50,7 @@ if test -n "$t2ref"; then
     mkdir -p /local
     touch /local/sysenv
 else
-    echo "Inserting core drivers for LB9A"
+    echo "Inserting core drivers"
     insmod /lib/modules/cpuDrv.ko
     insmod /lib/modules/flashDrv.ko
     insmod /lib/modules/i2cDrv.ko

@@ -291,7 +291,8 @@ busybox: busybox-clean target-rootfs-init
 DROPBEAR_ARCH=${ARCH}
 # Current requires dropbear directory be pre-configured 
 DROPBEAR_CONFIG_CMDLINE=${DROPBEAR_DIR}/configure --prefix=${TARGET_ROOTFS} \
-   --host=${DROPBEAR_ARCH}-linux
+   --host=${DROPBEAR_ARCH}-linux --disable-lastlog --disable-loginfunc \
+   --disable-utmp --disable-utmpx --disable-wtmp --disable-wtmpx
 
 # FIXME:  Should be able to do build specific makes for dropbear, haserl etc
 DROPBEAR_MAKE_CMDLINE=STATIC=1 PROGRAMS="dropbear dropbearkey scp" strip

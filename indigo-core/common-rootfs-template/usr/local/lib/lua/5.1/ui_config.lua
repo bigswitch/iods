@@ -33,6 +33,7 @@ Config.validator_to_help = {
    [parse_range]    = "a range low-high",
    [parse_dpid]     = "a datapath id up to 16 hex-digits",
    [parse_vid]      = "a VLAN id, -1 to 4095",
+   [parse_string_list] = "to be one of ",
 }
 
 -- Config vars and validators
@@ -47,6 +48,22 @@ Config.known_config_vars = {
    },
    ofp_options = {
       help = "the options passed to ofprotocol",
+   },
+   mgmt_if = {
+      validator = parse_string_list,
+      validator_arg = Platform.mgmt_if_allowed,
+      help = "switch management interface name",
+   },
+   ip_addr = {
+      validator = parse_ip,
+      help = "switch management interface ip address",
+   },
+   netmask = {
+      help = "switch management interface netmask",
+   },
+   gateway = {
+      validator = parse_ip,
+      help = "switch management interface gateway",
    },
    tap0_mac = {
       validator = parse_mac,
@@ -86,27 +103,31 @@ Config.known_config_vars = {
       validator = parse_yes_no,
       help = "disable the system config script on startup",
    },
-   disable_telnet = {
+   disable_telnetd = {
       validator = parse_yes_no,
-      help = "disable telnet if set to yes"
+      help = "disable telnetd if set to yes"
+   },
+   disable_sshd = {
+      validator = parse_yes_no,
+      help = "disable sshd if set to yes"
+   },
+   disable_httpd = {
+      validator = parse_yes_no,
+      help = "disable httpd if set to yes"
    },
    datapath_id = {
       validator = parse_dpid,
       help = "the datapath ID for the OpenFlow instance",
    },
    fail_mode = {
-      validator = parse_string_set,
+      validator = parse_string_list,
       validator_arg = {"open", "closed", "host", "static"},
       help = "the fail behavior for the OpenFlow protocol",
    },
    log_level = {
-      validator = parse_string_set,
+      validator = parse_string_list,
       validator_arg = {"debug", "info", "warn", "error", "none"},
       help = "the logging level for the system",
-   },
-   disable_httpd = {
-      validator = parse_yes_no,
-      help = "disable httpd if set to yes"
    },
    use_factory_mac = {
       validator = parse_yes_no,
@@ -115,8 +136,8 @@ Config.known_config_vars = {
 }
 
 -- Simple parsing of lines 'export key = value'
-function parse_config_line(line, config)
-   local start, len = string.find(line, '%s*export%s+[%a%d_]+%s*=')
+function parse_config_line(line, config, regexp)
+   local start, len = string.find(line, regexp)
    if not start or not len then
       ui_dbg_verb("config: Warning: could not parse line "..line.."\n")
       return
@@ -135,6 +156,8 @@ function parse_config_line(line, config)
       return
    end
    local key = t[2]
+   -- convert switch_ip to ip_addr
+   if key == "switch_ip" then key = "ip_addr" end
    config[key] = trim_string(value)
    if not Config.known_config_vars[string.lower(key)] then
       ui_dbg_info("config: Info: Unknown key "..key.."\n")
@@ -148,21 +171,32 @@ end
 function config_read(config, filename)
    filename = filename or Platform.cfg_filename
 
-   local cfg_file = io.open(filename)
-   local count = 0
+   local cfg_line_count = 0
 
-   if not cfg_file then
-      local err_str = string.format("config_read: Configuration file %s " ..
-                                    "not found\n", filename)
-      return -1, err_str
+   -- read config
+   cfg_line_count, err_string = file_read(config, filename, '%s*export%s+[%a%d_]+%s*=')
+   if (cfg_line_count == -1) then
+      return -1, err_string
    end
-   for line in cfg_file:lines() do
-      count = count + 1
-      if line ~= "" and not string.find(line, '%s*#') then
-         parse_config_line(line, config)
-      end
+
+   local mgmt_if_line_count = 0
+   local mgmt_if
+   if (config_var_is_set(config.mgmt_if)) then
+      mgmt_if = config.mgmt_if
+   else
+      -- if management interface is not set, set it to the default value
+      mgmt_if = Platform.mgmt_if or "eth0"
+      config.mgmt_if = mgmt_if      
    end
-   return count
+
+   -- read mgmt ip config
+   mgmt_if_line_count, errstring = ifcfg_read(mgmt_if, config)
+   if (mgmt_if_line_count == -1) then
+      ui_dbg_info(errstring)
+      mgmt_if_line_count = 0
+   end
+
+   return cfg_line_count + mgmt_if_line_count
 end
 
 function sfs_save()
@@ -206,24 +240,25 @@ function ipv42dpid(str)
 end
 
 
--- remove trailing and leading whitespace from string.
--- http://en.wikipedia.org/wiki/Trim_(8programming)
-function trim(s)
-  -- from PiL2 20.4
-  return (s:gsub("^%s*(.-)%s*$", "%1"))
-end
-
-
 -- the config var can be:
 --   not set at all
 --   set, but with value "" or "not_set"
 function config_var_is_set(v)
   local vset = false
   if v then
-    local vtrim = trim(tostring(v))
+    local vtrim = trim_string(tostring(v))
     vset = (vtrim ~= "") and (vtrim ~= "not_set")
+    ui_dbg_verb("config var trimmed to %s, result %s\n", vtrim, tostring(vset))
+  else
+    ui_dbg_verb("config var is nil\n")
   end
   return vset
+end
+
+
+-- certain config vars should not be printed into sysenv
+function config_var_is_dump2sysenv(v)
+  return not (v == "switch_ip" or v=="ip_addr" or v == "netmask" or v == "gateway")
 end
 
 
@@ -241,6 +276,12 @@ function config_save(config, verbose)
 # commands to this file.  Do not place other executable code in this file.
 
 ]]
+   local mgmt_if
+   if (config_var_is_set(config.mgmt_if)) then
+      mgmt_if = config.mgmt_if
+   else
+      mgmt_if = Platform.mgmt_if or "eth0"
+   end
 
    if file then
       ui_dbg_verb("config_save: Warning: Cfg history file %s replaced\n",
@@ -261,21 +302,23 @@ function config_save(config, verbose)
    end
 
    -- Create datapath_id if necessary
-   if not config_var_is_set(config["datapath_id"]) then
-      if config_var_is_set(config["switch_ip"]) then
-         config["datapath_id"] = ipv42dpid(config["switch_ip"])
+   if not config_var_is_set(config.datapath_id) then
+      if config_var_is_set(config.ip_addr) then
+         config.datapath_id = ipv42dpid(config.ip_addr)
       end
    end
 
    -- Sort the variables
    local keys = get_keys_as_sorted_list(config)
-
+   
    file:write(top_stuff)
    for i, k in ipairs(keys) do
       v = config[k]
-      if config_var_is_set(v) then
+      if config_var_is_set(v) and config_var_is_dump2sysenv(k) then
          ui_dbg_verb("config: export %s=%s\n", k, tostring(v))
          file:write("export "..k.."="..tostring(v).."\n")
+      else
+         ui_dbg_verb("config: not writing %s=%s\n", k, tostring(v))
       end
    end
 
@@ -283,6 +326,9 @@ function config_save(config, verbose)
       file:write(config.__ADDITIONAL_CONTENTS__)
    end
    io.close(file)
+
+   -- save ifcfg-related variables
+   ifcfg_create(mgmt_if, config)
 
    return sfs_save(verbose)
 end
@@ -319,22 +365,70 @@ function config_clear()
 
 end
 
--- Generate /etc/ifcfg-<intf> and save to overlay
+
+-- Generate /etc/ifcfg-<interface> and save to overlay
 function ifcfg_create(interface, values)
+   local rv
+   local dhcp_val
 
    if not interface then return end
 
-   exec_str = "/sbin/ifcfg-gen " .. interface
-   exec_str = exec_str .. " " .. values.dhcp_config or "disable"
-   if values.switch_ip then
-      exec_str = exec_str .. " " .. values.switch_ip
-      if values.netmask then
-         exec_str = exec_str .. " " .. values.netmask
-         if values.gateway then
-            exec_str = exec_str .. " " .. values.gateway
-         end
+   exec_str = "/sbin/ifcfg-gen"
+   if (config_var_is_set(values.ip_addr)) then
+      exec_str = exec_str .. " -i " .. values.ip_addr
+   end
+   if (config_var_is_set(values.netmask)) then
+      exec_str = exec_str .. " -n " .. values.netmask
+   end
+   if (config_var_is_set(values.gateway)) then
+      exec_str = exec_str .. " -g " .. values.gateway
+   end
+
+   exec_str = exec_str .. " " .. interface
+   if (config_var_is_set(values.dhcp_config)) then
+      dhcp_val = trim_string(values.dhcp_config)
+   else
+      dhcp_val = "disable"
+   end
+   exec_str = exec_str .. " " .. dhcp_val
+
+   ui_dbg_verb("ifcfg_create: %s\n", exec_str)
+
+   rv = os.execute(exec_str .. " > /dev/null")
+   if rv ~= 0 then
+      printf("error %d generating config for %s\n", rv, interface)
+   end
+end
+
+-- read from /etc/ifcfg-<interface> and populate into config
+-- returns lines read
+function ifcfg_read(interface, config)
+   if not interface then
+      return -1, "Null interface"
+   end
+
+   return file_read(config, "/etc/ifcfg-" .. interface, '%s*[%a%d_]+%s*=')
+end
+
+
+-- generic file read function
+-- returns number of lines read or -1 on error with error string
+function file_read(config, filename, regexp)
+   local cfg_file = io.open(filename)
+   local count = 0
+
+   if not cfg_file then
+      local err_str = string.format("Configuration file %s " ..
+                                    "not found\n", filename)
+      return -1, err_str
+   end
+   for line in cfg_file:lines() do
+      count = count + 1
+      if line ~= "" and not string.find(line, '%s*#') then
+         parse_config_line(line, config, regexp)
       end
    end
 
-   os.execute(exec_str)
+   return count
 end
+

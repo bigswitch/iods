@@ -1,0 +1,10 @@
+#!/bin/lua
+
+require "platform"
+
+outstr = ""
+for k,v in ipairs(Platform.mgmt_if_allowed) do
+    outstr = outstr .. v .. " "
+end
+
+print(outstr)

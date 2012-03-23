@@ -1,0 +1,10 @@
+#!/bin/sh
+if test -n "`which dropbearkey`"; then
+    if ! test -e /etc/dropbear/dropbear_rsa_host_key; then
+         echo "Generating RSA key"
+         mkdir -p /etc/dropbear
+         dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key > \
+             /etc/dropbear/dropbear_rsa_host_key.pub
+     fi
+fi
+exec dropbear -F -E 2>&1
