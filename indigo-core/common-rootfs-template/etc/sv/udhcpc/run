@@ -1,0 +1,48 @@
+#!/bin/sh
+#
+# Copyright 2012 Big Switch Networks
+#
+# Set up variables needed for udhcpc and then invoke.
+#
+
+source /etc/find-env
+
+# The interface name is currently extracted from the service name.
+#
+# If the service is started up by symlinking from /etc/sv/udhcpc to 
+# /service/dhcpc-<intf>, then the supervise directory will be
+# created in /etc/sv/udhcpc, and sv will become confused.
+
+service=`basename \`pwd\``
+interface=`lua -e "print(string.match(\"$service\",\"-(.+)\"))"`
+
+if [ -z "$interface" ]; then
+   echo "Error extracting interface for $service"
+   exit 1
+fi
+
+echo "Starting DHCP client on $interface"
+
+now_arg=""
+if [ "$dhcp_config" != "require" ]; then
+    now_arg="-n"
+fi
+vendorext_arg=""
+if [ "$dhcp_config" == "vendorext" ]; then
+    vendorext_arg="-O vendorext"
+fi
+dhcp_client_id_arg=""
+if [ -n "$dhcp_client_id" ]; then
+    # convert client id to hex
+    hex_client_id=`hexify $dhcp_client_id`
+    # -C surpresses default MAC address as client id;
+    # -x 61:hex-encoded-client-id
+    dhcp_client_id_arg="-C -x 61:$hex_client_id"
+fi
+
+# -f stay in foreground
+# -R release lease on exit
+exec /sbin/udhcpc -f -R -i $interface -V Indigo \
+    $vendorext_arg $dhcp_client_id_arg \
+    -s /etc/dhcp_renew.sh \
+    $now_arg 2>&1

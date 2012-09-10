@@ -59,6 +59,7 @@ Content-type: text/html
 <input type="hidden" name="controller_port" 
        value=<% chk_var(cfg.controller_port) %> />
 <input type="hidden" name="datapath_id" value=<% chk_var(cfg.datapath_id) %> />
+<input type="hidden" name="log_level" value=<% chk_var(cfg.log_level) %> />
 <input type="hidden" name="fail_mode" value=<% chk_var(cfg.fail_mode) %> />
 <tr><td>Management interface for this switch:</td>
 <td>
@@ -66,6 +67,18 @@ Content-type: text/html
 <option name="eth0" <% get_chk_val(cfg.mgmt_if, "eth0", "selected") %> >eth0</option>
 <option name="eth1" <% get_chk_val(cfg.mgmt_if, "eth1", "selected") %> >eth1</option>
 </select>
+</td></tr>
+<tr><td>DHCP configuration for this interface:</td>
+<td>
+<select name="dhcp_config" size="1">
+<option value="disable" <% get_chk_val(cfg.dhcp_config, "disable", "selected") %> >disable</option>
+<option value="enable" <% get_chk_val(cfg.dhcp_config, "enable", "selected") %> >enable</option>
+<option value="vendorext" <% get_chk_val(cfg.dhcp_config, "vendorext", "selected") %> >controller from vendor extension</option>
+</select>
+</td></tr>
+<tr><td>DHCP client identifier for this interface:</td>
+<td>
+<input type="text" name="dhcp_client_id" value=<% chk_var(cfg.dhcp_client_id) %> />
 </td></tr>
 <tr><td>IP address for this switch:</td>
 <td>
@@ -82,18 +95,6 @@ Content-type: text/html
 <tr><td>System Name:</td>
 <td>
 <input type="text" name="system_ref" value=<% chk_var(cfg.system_ref) %> />
-</td></tr>
-<tr><td>
-Log level:
-</td><td>
-<select name="log_level" size="1" >
-<option name="none" <% get_chk_val(cfg.log_level, "none", "selected") %> >none</option>
-<option name="error" <% get_chk_val(cfg.log_level, "error", "selected") %> >error</option>
-<option name="warn" <% get_chk_val(cfg.log_level, "warn", "selected") %> >warn</option>
-<option name="info" <% get_chk_val(cfg.log_level, "info", "selected") %> >info</option>
-<option name="verbose" <% get_chk_val(cfg.log_level, "verbose", "selected") %> >verbose</option>
-<option name="verbose" <% get_chk_val(cfg.log_level, "vverb", "selected") %> >vverb</option>
-</select>
 </td></tr>
 <tr><td>
 <input type="submit" value="Save Configuration" /></td>

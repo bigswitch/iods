@@ -491,9 +491,13 @@ function parse_port_spec(line, max)
    -- Get spec, first token
    local s, e = token:find("%S+")
    if not s then return nil, line end
-   -- TODO Search for non number, dash or comma in string and return error
+
    local spec = token:sub(s, e)
    local groups = {}
+
+   -- Search for non number in string and return error
+   if spec:find("[%a%c]") then return nil, line end
+   -- TODO Search for non dash or comma punctuation in string and return error
 
    if spec:find(",") then
       groups = split(spec, ",") -- Split by , groups

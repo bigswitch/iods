@@ -1,0 +1,13 @@
+#!/bin/lua
+
+-- http://snippets.luacode.org/?p=snippets/String_to_Hex_String_68
+function HexDumpString(str,spacer)
+  return (
+    string.gsub(str,"(.)",
+      function (c)
+        return string.format("%02X%s",string.byte(c), spacer or "")
+      end)
+    )
+end
+
+print(HexDumpString(arg[1]))

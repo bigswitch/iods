@@ -229,6 +229,10 @@ struct of_hw_driver {
      * port_enable_get(table, port)
      * port_no_flood_set(driver, port, no_flood)
      * port_no_flood_get(driver, port)
+     * port_curr_features_get(table, port)
+     * port_advertised_features_get(table, port)
+     * port_supported_features_get(table, port)
+     * port_peer_features_get(table, port)
      *
      * Get/set the indicated properties of a port.  Only real ports
      * set with port_add are supported.
@@ -238,6 +242,13 @@ struct of_hw_driver {
     int (*port_enable_get)(of_hw_driver_t *hw_drv, int of_port);
     int (*port_no_flood_set)(of_hw_driver_t *hw_drv, int of_port, int no_flood);
     int (*port_no_flood_get)(of_hw_driver_t *hw_drv, int of_port);
+    uint32_t (*port_curr_features_get)(of_hw_driver_t *hw_drv, int of_port);
+    uint32_t (*port_advertised_features_get)(of_hw_driver_t *hw_drv, 
+                                             int of_port);
+    uint32_t (*port_supported_features_get)(of_hw_driver_t *hw_drv, 
+                                            int of_port);
+    uint32_t (*port_peer_features_get)(of_hw_driver_t *hw_drv, 
+                                       int of_port);
 
     /*
      * port_queue_config(drv, port, qid, min-bw)

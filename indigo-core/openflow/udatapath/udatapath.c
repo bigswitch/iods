@@ -326,6 +326,9 @@ udatapath_cmd(int argc, char *argv[])
     WATCHDOG_START;
 
     dp->rx_enabled = 1;
+
+    system("touch /tmp/ofswd-ready");
+
     printf("Entering event loop");
     for (;;) {
         WATCHDOG_STROKE;

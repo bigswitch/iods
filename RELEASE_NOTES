@@ -3,6 +3,24 @@ Release Notes
 Please see the web site http://www.openflowhub.org/display/Indigo for full 
 information.
 
+IODS Release 2012.09.07
+
+This is a partial release focused on the Pronto 3290 (LB9A) and 
+Pronto 3780 (LB8). Other platforms may build and work but have 
+not been validated for this release. It includes a push to 
+git hub https://github.com/bigswitch/iods and new binary images 
+for the target platforms on the Indigo site: 
+http://www.openflowhub.org/display/Indigo.
+
+* Preliminary support for controller contact information via DHCP
+* Update to Busybox 1.20.2 for most platforms
+* Various initialization sequence fixes (Indigo-134)
+* Updates for stats reply bugs (Indigo-132)
+* Support various port characteristic fields in physical port 
+  descriptions
+* Fix various VLAN tag related matching and manipulation issues 
+  including setting VLAN priority field
+
 IODS Release 2012.03.19
 
 * Use standard busybox initialization management. See March 2012 

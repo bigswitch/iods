@@ -1,11 +1,12 @@
 #!/bin/sh
 #
-# Copyright 2011 Big Switch Networks
+# Copyright 2012 Big Switch Networks
 #
 # Set up variables needed for ofswd and then invoke.
 #
 
 source /etc/find-env
+rm -f /tmp/ofswd-ready
 
 # Copy rc.soc and config.bcm init files to client root directory
 if test -e $client_rc_soc; then
@@ -75,6 +76,8 @@ fi
 if test -e $log_dir/cmdsrv.log; then
     mv $log_dir/cmdsrv.log $log_dir/cmdsrv.log.old
 fi
+
+sv once ofswd-cfg
 
 cd $client_root                                           
 exec ofswd < /dev/null 2>&1

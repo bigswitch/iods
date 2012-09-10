@@ -161,6 +161,7 @@ extern char serial_num;
                                   | (1 << OFPAT_SET_DL_DST)   \
                                   | (1 << OFPAT_SET_NW_SRC)   \
                                   | (1 << OFPAT_SET_NW_DST)   \
+                                  | (1 << OFPAT_SET_NW_TOS)   \
                                   | (1 << OFPAT_SET_TP_SRC)   \
                                   | (1 << OFPAT_SET_TP_DST)   \
                                   | (1 << OFPAT_ENQUEUE))
@@ -1284,7 +1285,13 @@ fill_port_desc(struct sw_port *p, struct ofp_phy_port *desc)
             p->config |= OFPPC_PORT_DOWN;
         }
         memcpy(desc->hw_addr, p->eth_addr, ETH_ADDR_LEN);
-        /* FIXME:  Add current, supported and advertised features */
+
+        desc->curr = htonl(hw_drv->port_curr_features_get(hw_drv, p->port_no));
+        desc->advertised = 
+            htonl(hw_drv->port_advertised_features_get(hw_drv, p->port_no));
+        desc->supported = 
+            htonl(hw_drv->port_supported_features_get(hw_drv, p->port_no));
+        desc->peer = htonl(hw_drv->port_peer_features_get(hw_drv, p->port_no));
 #endif
     } else if (p->netdev) {
         strncpy((char *) desc->name, netdev_get_name(p->netdev),
@@ -1652,7 +1659,7 @@ add_flow(struct datapath *dp, const struct sender *sender,
         goto error_free_flow;
     }
 
-    flow->priority = flow->key.wildcards ? ntohs(ofm->priority) : -1;
+    flow->priority = ntohs(ofm->priority);
 
     if (ntohs(ofm->flags) & OFPFF_CHECK_OVERLAP) {
         /* check whether there is any conflict */
@@ -1742,7 +1749,7 @@ mod_flow(struct datapath *dp, const struct sender *sender,
         goto error_free_flow;
     }
 
-    flow->priority = flow->key.wildcards ? ntohs(ofm->priority) : -1;
+    flow->priority = ntohs(ofm->priority);
     strict = (ofm->command == htons(OFPFC_MODIFY_STRICT)) ? 1 : 0;
 
     /* First try to modify existing flows if any */
@@ -1813,7 +1820,7 @@ recv_flow(struct datapath *dp, const struct sender *sender,
         struct sw_flow_key key;
         uint16_t priority;
         flow_extract_match(&key, &ofm->match);
-        priority = key.wildcards ? ntohs(ofm->priority) : -1;
+        priority = ntohs(ofm->priority);
         return chain_delete(dp->chain, &key, ofm->out_port, priority, 1,
                             (ntohs(ofm->flags) & OFPFF_EMERG) ? 1 : 0)
                             ? 0 : -ESRCH;

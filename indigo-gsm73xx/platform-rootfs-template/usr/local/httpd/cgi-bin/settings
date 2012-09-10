@@ -141,12 +141,17 @@ Content-type: text/html
     <td><strong>Using DHCP for switch IP:</strong></td>
     <td><input type="radio" name="dhcp_config" value="disable" <% get_chk_val(cfg.dhcp_config, "disable") %> />Disable DHCP<br />
     <input type="radio" name="dhcp_config" value="enable" <% get_chk_val(cfg.dhcp_config, "enable") %> />Enable DHCP<br />
+    <input type="radio" name="dhcp_config" value="vendorext" <% get_chk_val(cfg.dhcp_config, "vendorext") %> />Controller from vendor extension <br />
     <input type="radio" name="dhcp_config" value="require" <% get_chk_val(cfg.dhcp_config, "require") %> />Only use DHCP<br />
     </td>
 </tr>
 <tr>
+    <td><strong>DHCP client identifier:</strong></td>
+    <td><input type="text" class="field-01" name="dhcp_client_id" value=<% chk_var(cfg.dhcp_client_id) %> /></td>
+</tr>
+<tr>
     <td><strong>Configured IP address for this switch:</strong></td>
-    <td><input type="text" class="field-01" name="switch_ip" value=<% chk_var(cfg.switch_ip) %> /></td>
+    <td><input type="text" class="field-01" name="ip_addr" value=<% chk_var(cfg.ip_addr) %> /></td>
 </tr>
 <tr>
     <td><strong>Netmask for this IP address:</strong></td>

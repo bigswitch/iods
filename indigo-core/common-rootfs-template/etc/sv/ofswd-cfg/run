@@ -1,0 +1,38 @@
+#!/bin/sh
+#
+# Copyright 2012 Big Switch Networks
+#
+# Set up variables needed for ofswd and then invoke.
+#
+
+source /etc/find-env
+
+exec > /tmp/ofswd-cfg.log 2>&1
+
+CMDSRV_PORT=8088
+
+# wait until ofswd is accepting input and cmdsrv is up
+cmdsrv_status=`netstat -l 2> /dev/null | grep $CMDSRV_PORT`             
+while [ ! -f /tmp/ofswd-ready -o -z "$cmdsrv_status" ]; do
+    sleep 1
+    cmdsrv_status=`netstat -l 2> /dev/null | grep $CMDSRV_PORT`
+done
+
+SCRIPT=/etc/inband-network
+if [ -f $SCRIPT ]; then
+    echo "Sourcing $SCRIPT"
+    source $SCRIPT
+fi
+
+if [ -n "$log_level" ]; then
+    echo "Setting log level to $log_level"
+    cmd debug $log_level
+fi
+
+SCRIPT=$config_dir/indigo-rc.sh
+if [ -f $SCRIPT ]; then
+    echo "Sourcing $SCRIPT"
+    source $SCRIPT
+fi
+
+# terminate, since this service is expected to be run once

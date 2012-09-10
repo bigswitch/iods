@@ -332,7 +332,7 @@ function process_line(command_table, line, interactive)
       if token:find("--", 1, true) == 1 then return 0 end
       if token:find("^#") then return 0 end
       token = token:lower()
-      if token == "quit" then return 1 end
+      if token == "quit" or token == "exit" then return 1 end
       if token == "help" then
          cli_help(line, Global.command_table)
          return 0

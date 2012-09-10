@@ -4,4 +4,6 @@ build-images-*
 of-bld-*
 tmp-files/*
 *bcm.user*
+of-bld
+build-images
 

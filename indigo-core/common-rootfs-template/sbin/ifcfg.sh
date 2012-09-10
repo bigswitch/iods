@@ -5,6 +5,9 @@
 # Source ifcfg-<interface> if present for config variables
 #
 
+SRCSV=/etc/sv
+DSTSV=/service
+
 if test -z "$1"; then
     echo "No interface specified to ifcfg"
     exit 1
@@ -21,6 +24,11 @@ else
     echo "Warning: No /etc/ifcfg-$interface found; DHCP only"
     dhcp_config="require"
 fi
+
+echo "Bringing up interface $interface"
+/sbin/ifconfig $interface up
+# wait for interface to come up before configuring further
+sleep 3
 
 if test "$dhcp_config" != "require"; then
     if test -n "$netmask"; then
@@ -42,16 +50,11 @@ fi
 
 # In any case, run dhcp client if not disabled
 if test "$dhcp_config" != "disable"; then
-    now_arg=""
-    if test "$dhcp_config" != "require"; then
-        now_arg="-n"
-    fi
-    # FIXME:  May disrupt multiple interfaces running DHCP
-    killall udhcpc
-    sleep 1
-    echo "Starting DHCP client on $interface, logging to /local/logs/dhcp.log"
-    /sbin/udhcpc -i $interface -s /etc/dhcp_renew.sh \
-        $now_arg >> /local/logs/dhcp.log 2>&1
+    # Since udhcpc can be started up for more than one interface,
+    # copy the entire service directory to /etc/sv/udhcpc-<interface> first
+    # to avoid having multiple "supervise" directories.
+    cp -a $SRCSV/udhcpc/ $SRCSV/udhcpc-$interface
+    ln -sf $SRCSV/udhcpc-$interface $DSTSV
 else
     echo "DHCP client is disabled for $interface"
 fi

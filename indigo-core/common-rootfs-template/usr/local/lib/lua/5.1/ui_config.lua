@@ -58,6 +58,14 @@ Config.known_config_vars = {
       validator = parse_ip,
       help = "switch management interface ip address",
    },
+   dhcp_config = {
+      validator = parse_string_list,
+      validator_arg = {"enable", "disable", "vendorext"},
+      help = "DHCP configuration for management interface",
+   },
+   dhcp_client_id = {
+      help = "DHCP client identifier for management interface",
+   },
    netmask = {
       help = "switch management interface netmask",
    },
@@ -126,7 +134,7 @@ Config.known_config_vars = {
    },
    log_level = {
       validator = parse_string_list,
-      validator_arg = {"debug", "info", "warn", "error", "none"},
+      validator_arg = {"vverb", "verbose", "info", "warn", "error", "none"},
       help = "the logging level for the system",
    },
    use_factory_mac = {

@@ -36,7 +36,9 @@ config_parse_tab = {
 
 -- Return true if parameter value is valid, false, string otherwise
 function validate_param(var, value)
-   var_desc = Config.known_config_vars[var]
+   local var_desc = Config.known_config_vars[var]
+   local dator, dator_arg
+
    if var_desc then
       dator = var_desc.validator
       dator_arg = var_desc.validator_arg

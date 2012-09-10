@@ -57,7 +57,7 @@ DROPBEAR_DIR=${CORE_DIR}/dropbear-0.52
 DROPBEAR_MAKE_DIR=${TMP_FILES_DIR}/dropbear-${BLD_EXT}
 #DROPBEAR_MAKE_DIR=${DROPBEAR_DIR}
 DROPBEAR_PROGRAMS=dropbear dbclient dropbearkey dropbearconvert scp
-BUSYBOX_DIR=${CORE_DIR}/busybox-1.14.2
+BUSYBOX_DIR=${CORE_DIR}/busybox-1.20.2
 
 PRONTO_ROOTFS_TEMPLATE=${CORE_DIR}/pronto-rootfs-template
 COMMON_ROOTFS_TEMPLATE=${CORE_DIR}/common-rootfs-template

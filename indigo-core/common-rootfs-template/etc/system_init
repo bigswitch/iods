@@ -54,15 +54,16 @@ else
     fi
 fi
 
+# Set up for runit-managed services;
+# must happen before oob-network configuration.
+SRCSV=/etc/sv
+DSTSV=/service
+mkdir -p $DSTSV
+
 # Start up out-of-band network if enabled
 if test -e /etc/oob-network; then
     source /etc/oob-network
 fi
-
-# Start up runit-managed services
-SRCSV=/etc/sv
-DSTSV=/service
-mkdir -p $DSTSV
 
 # Start up fan daemon if present
 PROG=fand
@@ -95,19 +96,13 @@ if test "$disable_sysconf" == "yes" ; then
     exit 0
 fi
 
-# Start up ofswd and ofprotocol
+# Start up ofswd, ofprotocol, and ofswd-cfg
 PROG=ofswd
 ln -sf $SRCSV/$PROG $DSTSV
 PROG=ofprotocol
 ln -sf $SRCSV/$PROG $DSTSV
-
-# Start up inband-network configuration if necessary
-PROG=inband-network-cfg
-if test -e /etc/inband-network; then
-    ln -sf $SRCSV/$PROG $DSTSV
-else
-    rm -f $DSTSV/$PROG
-fi
+PROG=ofswd-cfg
+ln -sf $SRCSV/$PROG $DSTSV
 
 # Start web server if so directed
 PROG=httpd

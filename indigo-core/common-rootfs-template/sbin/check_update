@@ -26,15 +26,23 @@ if test -z "$dhcp_config"; then
     dhcp_config=disable
 fi
 
+if [ -n "$netmask" ]; then
+    netmask_opt="-n $netmask"
+fi
+
+if [ -n "$gateway" ]; then
+    gateway_opt="-g $gateway"
+fi
+
 if test "$vendor" == "ntgr"; then
     if test -n "$switch_ip"; then
         echo "Updating ifcfg-tap0"
-        ifcfg-gen tap0 $dhcp_config $switch_ip $netmask $gateway
+        ifcfg-gen -i $switch_ip $netmask_opt $gateway_opt tap0 $dhcp_config 
         exit 0
     fi
     if test -n "$TAP0_IP"; then
         echo "Updating ifcfg-tap0"
-        ifcfg-gen tap0 $dhcp_config $TAP0_IP $netmask $gateway
+        ifcfg-gen -i $TAP0_IP $netmask_opt $gateway_opt tap0 $dhcp_config
         exit 0
     fi
 fi
@@ -72,7 +80,11 @@ elif test -n "$ETH1_IP"; then
     use_ip=$ETH1_IP
 fi
 
+if [ -n "$use_ip" ]; then
+    use_ip_opt="-i $use_ip"
+fi
+
 if [ -n "$interface" ]; then
     echo "Updating ifcfg-$interface"
-    ifcfg-gen $interface $dhcp_config $use_ip $netmask $gateway
+    ifcfg-gen $use_ip_opt $netmask_opt $gateway_opt $interface $dhcp_config
 fi

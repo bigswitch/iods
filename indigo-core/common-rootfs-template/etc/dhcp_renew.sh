@@ -2,11 +2,7 @@
 
 RESOLV_CONF="/etc/resolv.conf"
 
-
-echo `date`
-echo "Running udhcpc script renew.sh"
-echo $ip >> /var/dhcpfile
-echo $subnet >> /var/dhcpfile
+echo "`date`: Running udhcpc script renew.sh"
 echo "Iterface: $interface"
 echo "IP: $ip"
 echo "Subnet: $subnet"
@@ -36,4 +32,31 @@ if [ -n "$dns" ]; then
     fi
     echo "nameserver $dns" > $RESOLV_CONF
     echo "domain $domain" >> $RESOLV_CONF
+fi
+
+if [ -n "$vendorext" ]; then
+    echo "Vendor extension: $vendorext"
+
+    # get current controller_ip and controller_port
+    source /etc/find-env
+
+    ORIG_IFS=$IFS
+    IFS=":"
+    set -- $vendorext
+    if [ -n "$1" -a -n "$2" ]; then
+        # check for changes to controller_ip and _port
+        # to avoid unnecessarily restarting openflow daemons
+        if [ "$controller_ip" != "$1" -o "$controller_port" != $2 ]; then
+            echo "Building new sysenv"
+            newsysenv=/tmp/newsysenv
+            origsysenv=$config_dir/sysenv
+            # replace controller_ip and controller_port
+            sed -e "/controller_ip=/s/$controller_ip/$1/" \
+                -e "/controller_port=/s/$controller_port/$2/" \
+                $origsysenv > $newsysenv
+            mv -f $newsysenv $origsysenv
+            /sbin/of-restart
+        fi
+    fi
+    IFS=$ORIG_IFS
 fi

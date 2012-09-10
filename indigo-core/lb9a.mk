@@ -25,7 +25,7 @@ LINUX_VERSION=2.6.27
 UBOOT_DIR=${PLATFORM_ROOT}/u-boot-1.3.0
 
 RAMDISK_BLOCKS=40960
-BUSYBOX_DIR=${PLATFORM_ROOT}/busybox-1.13.3
+#BUSYBOX_DIR=${PLATFORM_ROOT}/busybox-1.13.3
 
 # Fan daemon target
 fand: quanta-drivers
